@@ -1,58 +1,84 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, Eye, Edit, UserCheck, X } from 'lucide-react';
+import { Search, Plus, Eye, Edit, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import AddKisaniDidiModal from './AddKisaniDidiModal';
 
 const KisaniDidiManagement = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedKD, setSelectedKD] = useState<any>(null);
 
   const allKisaniDidis = [
     {
       id: 1,
-      name: 'Meera Patel',
-      registrationId: 'KD-2024-001',
+      name: 'Priya Sharma',
+      memberId: 'MEM-KD-2024-001',
       mobile: '+91 9876543210',
-      location: 'Ahmedabad, Gujarat',
+      location: 'Rajasthan, Jaipur, Sanganer',
       status: 'Active',
-      assignedTasks: 5,
-      completionRate: '95%'
+      assignedTasks: '10/12'
     },
     {
       id: 2,
-      name: 'Priya Sharma',
-      registrationId: 'KD-2024-002',
+      name: 'Sunita Devi',
+      memberId: 'MEM-KD-2024-002',
       mobile: '+91 9876543211',
-      location: 'Surat, Gujarat',
+      location: 'Uttar Pradesh, Lucknow, Gomti Nagar',
+      status: 'Active',
+      assignedTasks: '7/8'
+    },
+    {
+      id: 3,
+      name: 'Geeta Verma',
+      memberId: 'MEM-KD-2024-003',
+      mobile: '+91 9876543212',
+      location: 'Madhya Pradesh, Bhopal, Indrapuri',
       status: 'Inactive',
-      assignedTasks: 3,
-      completionRate: '87%'
+      assignedTasks: '3/5'
+    },
+    {
+      id: 4,
+      name: 'Anjali Yadav',
+      memberId: 'MEM-KD-2024-004',
+      mobile: '+91 9876543213',
+      location: 'Maharashtra, Mumbai, Andheri',
+      status: 'Active',
+      assignedTasks: '9/10'
+    },
+    {
+      id: 5,
+      name: 'Deepika Patel',
+      memberId: 'MEM-KD-2024-005',
+      mobile: '+91 9876543214',
+      location: 'Gujarat, Ahmedabad, Naranpura',
+      status: 'Active',
+      assignedTasks: '12/15'
     }
   ];
 
   const pendingApprovals = [
     {
-      id: 3,
+      id: 101,
       name: 'Kavita Singh',
-      registrationId: 'KD-2024-003',
-      mobile: '+91 9876543212',
-      location: 'Rajkot, Gujarat',
-      status: 'Pending',
-      appliedDate: '2024-01-15',
-      priority: 'High'
+      memberId: 'MEM-KD-2024-101',
+      mobile: '+91 9876543220',
+      location: 'Bihar, Patna, Boring Road',
+      appliedDate: '2024-03-15'
     },
     {
-      id: 4,
-      name: 'Sunita Devi',
-      registrationId: 'KD-2024-004',
-      mobile: '+91 9876543213',
-      location: 'Vadodara, Gujarat',
-      status: 'Pending',
-      appliedDate: '2024-01-14',
-      priority: 'Medium'
+      id: 102,
+      name: 'Ritu Kumari',
+      memberId: 'MEM-KD-2024-102',
+      mobile: '+91 9876543221',
+      location: 'Jharkhand, Ranchi, Hinoo',
+      appliedDate: '2024-03-18'
+    },
+    {
+      id: 103,
+      name: 'Neha Sharma',
+      memberId: 'MEM-KD-2024-103',
+      mobile: '+91 9876543222',
+      location: 'Assam, Guwahati, Dispur',
+      appliedDate: '2024-03-20'
     }
   ];
 
@@ -60,14 +86,12 @@ const KisaniDidiManagement = () => {
     navigate(`/kisani-didi/${kd.id}`);
   };
 
-  const handleEditKD = (kd: any) => {
-    setSelectedKD(kd);
-    setShowAddModal(true);
+  const handleAddNew = () => {
+    navigate('/kisani-didi/add');
   };
 
-  const handleAddKD = () => {
-    setSelectedKD(null);
-    setShowAddModal(true);
+  const handleEdit = (kd: any) => {
+    navigate(`/kisani-didi/edit/${kd.id}`);
   };
 
   const handleApprove = (kd: any) => {
@@ -84,29 +108,60 @@ const KisaniDidiManagement = () => {
     ? allKisaniDidis.filter(kd =>
         kd.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         kd.mobile.includes(searchTerm) ||
-        kd.registrationId.toLowerCase().includes(searchTerm.toLowerCase())
+        kd.memberId.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : pendingApprovals.filter(kd =>
         kd.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         kd.mobile.includes(searchTerm) ||
-        kd.registrationId.toLowerCase().includes(searchTerm.toLowerCase())
+        kd.memberId.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" style={{ fontFamily: 'Inter' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Kisani Didi Management</h1>
-          <p className="text-gray-600 mt-1">Manage Kisani Didis, approvals, and task assignments</p>
+          <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter' }}>Kisani Didi Management</h1>
+          <p className="text-gray-600 mt-1" style={{ fontFamily: 'Inter' }}>Manage Kisani Didis, approvals, and assignments</p>
         </div>
         <button
-          onClick={handleAddKD}
+          onClick={handleAddNew}
           className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2 transition-colors"
+          style={{ fontFamily: 'Inter', fontSize: '13.02px', fontWeight: 600 }}
         >
           <Plus size={20} />
-          Register New KD
+          Add New Kisani Didi
         </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600" style={{ fontFamily: 'Inter' }}>Total Kisani Didis</p>
+              <p className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter' }}>156</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600" style={{ fontFamily: 'Inter' }}>Pending Approvals</p>
+              <p className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter' }}>8</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -118,8 +173,9 @@ const KisaniDidiManagement = () => {
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
           }`}
+          style={{ fontFamily: 'Inter', fontSize: '13.02px' }}
         >
-          All KDs ({allKisaniDidis.length})
+          All KDs
         </button>
         <button
           onClick={() => setActiveTab('pending')}
@@ -128,27 +184,25 @@ const KisaniDidiManagement = () => {
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-600 hover:text-gray-900'
           }`}
+          style={{ fontFamily: 'Inter', fontSize: '13.02px' }}
         >
-          Pending Approvals ({pendingApprovals.length})
+          Pending Approvals (3)
         </button>
       </div>
 
-      {/* Search and Filter */}
+      {/* Search */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Search by name, mobile, or registration ID..."
+            placeholder="Search by name, mobile, or member ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            style={{ fontFamily: 'Inter', fontSize: '13.02px' }}
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-          <Filter size={20} />
-          Filter
-        </button>
       </div>
 
       {/* Table */}
@@ -156,31 +210,64 @@ const KisaniDidiManagement = () => {
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left" style={{ 
+                fontFamily: 'Inter', 
+                fontSize: '13.56px', 
+                fontWeight: 600,
+                color: '#374151'
+              }}>
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Registration ID
+              <th className="px-6 py-3 text-left" style={{ 
+                fontFamily: 'Inter', 
+                fontSize: '13.56px', 
+                fontWeight: 600,
+                color: '#374151'
+              }}>
+                Member ID
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left" style={{ 
+                fontFamily: 'Inter', 
+                fontSize: '13.56px', 
+                fontWeight: 600,
+                color: '#374151'
+              }}>
                 Mobile
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left" style={{ 
+                fontFamily: 'Inter', 
+                fontSize: '13.56px', 
+                fontWeight: 600,
+                color: '#374151'
+              }}>
                 Location
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Status
-              </th>
-              {activeTab === 'all' ? (
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              {activeTab === 'all' && (
+                <th className="px-6 py-3 text-left" style={{ 
+                  fontFamily: 'Inter', 
+                  fontSize: '13.56px', 
+                  fontWeight: 600,
+                  color: '#374151'
+                }}>
                   Assigned Tasks
                 </th>
-              ) : (
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              )}
+              {activeTab === 'pending' && (
+                <th className="px-6 py-3 text-left" style={{ 
+                  fontFamily: 'Inter', 
+                  fontSize: '13.56px', 
+                  fontWeight: 600,
+                  color: '#374151'
+                }}>
                   Applied Date
                 </th>
               )}
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left" style={{ 
+                fontFamily: 'Inter', 
+                fontSize: '13.56px', 
+                fontWeight: 600,
+                color: '#374151'
+              }}>
                 Actions
               </th>
             </tr>
@@ -191,103 +278,111 @@ const KisaniDidiManagement = () => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => handleViewProfile(kd)}
-                    className="text-sm font-semibold text-gray-900 hover:text-blue-600 underline"
+                    className="text-sm font-semibold hover:text-blue-600 underline"
+                    style={{ 
+                      fontFamily: 'Inter', 
+                      fontSize: '13.02px', 
+                      fontWeight: 600,
+                      color: '#101828',
+                      textDecoration: 'underline'
+                    }}
                   >
                     {kd.name}
                   </button>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {kd.registrationId}
+                <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ 
+                  fontFamily: 'Inter', 
+                  fontSize: '13.02px', 
+                  fontWeight: 400,
+                  color: '#4A5565'
+                }}>
+                  {kd.memberId}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ 
+                  fontFamily: 'Inter', 
+                  fontSize: '13.02px', 
+                  fontWeight: 400,
+                  color: '#4A5565'
+                }}>
                   {kd.mobile}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ 
+                  fontFamily: 'Inter', 
+                  fontSize: '13.02px', 
+                  fontWeight: 400,
+                  color: '#4A5565'
+                }}>
                   {kd.location}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                    kd.status === 'Active'
-                      ? 'bg-green-100 text-green-800'
-                      : kd.status === 'Pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {kd.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {activeTab === 'all' 
-                    ? `${(kd as any).assignedTasks} tasks` 
-                    : (kd as any).appliedDate
-                  }
-                </td>
+                {activeTab === 'all' && (
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ 
+                    fontFamily: 'Inter', 
+                    fontSize: '13.02px', 
+                    fontWeight: 400,
+                    color: '#4A5565'
+                  }}>
+                    {(kd as any).assignedTasks}
+                  </td>
+                )}
+                {activeTab === 'pending' && (
+                  <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ 
+                    fontFamily: 'Inter', 
+                    fontSize: '13.02px', 
+                    fontWeight: 400,
+                    color: '#4A5565'
+                  }}>
+                    {(kd as any).appliedDate}
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                  <div className="flex items-center gap-2">
-                    {activeTab === 'pending' ? (
-                      <>
-                        <button
-                          onClick={() => handleApprove(kd)}
-                          className="p-1 text-green-600 hover:text-green-800"
-                          title="Approve"
-                        >
-                          <UserCheck size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleReject(kd)}
-                          className="p-1 text-red-600 hover:text-red-800"
-                          title="Reject"
-                        >
-                          <X size={16} />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleViewProfile(kd)}
-                          className="p-1 text-gray-400 hover:text-blue-600"
-                          title="View Profile"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleEditKD(kd)}
-                          className="p-1 text-gray-400 hover:text-green-600"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
-                      </>
-                    )}
-                    <button
-                      className="p-1 text-gray-400 hover:text-gray-600"
-                      title="More Actions"
-                    >
-                      <MoreHorizontal size={16} />
-                    </button>
-                  </div>
+                  {activeTab === 'pending' ? (
+                    <div className="flex items-center gap-2">
+                      <button className="px-3 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200">
+                        Review
+                      </button>
+                      <button 
+                        onClick={() => handleApprove(kd)}
+                        className="px-3 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        onClick={() => handleReject(kd)}
+                        className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleViewProfile(kd)}
+                        className="p-1 text-gray-400 hover:text-blue-600"
+                        title="View Profile"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(kd)}
+                        className="p-1 text-gray-400 hover:text-green-600"
+                        title="Edit"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        className="p-1 text-gray-400 hover:text-gray-600"
+                        title="More Actions"
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
-      {/* Add/Edit KD Modal */}
-      {showAddModal && (
-        <AddKisaniDidiModal
-          kisaniDidi={selectedKD}
-          onClose={() => {
-            setShowAddModal(false);
-            setSelectedKD(null);
-          }}
-          onSave={(kdData) => {
-            console.log('Saving KD:', kdData);
-            setShowAddModal(false);
-            setSelectedKD(null);
-          }}
-        />
-      )}
     </div>
   );
 };

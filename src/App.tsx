@@ -17,6 +17,8 @@ import NotificationManagement from './components/notifications/NotificationManag
 import PaymentManagement from './components/payments/PaymentManagement';
 import SubAdminManagement from './components/sub-admin/SubAdminManagement';
 import Settings from './components/settings/Settings';
+import AddKisaniDidi from './components/kisani-didi/AddKisaniDidi';
+import EditKisaniDidi from './components/kisani-didi/EditKisaniDidi';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,6 +45,8 @@ function App() {
               <Route path="/farmers/:id" element={<FarmerProfile />} />
               <Route path="/kisani-didi" element={<KisaniDidiManagement />} />
               <Route path="/kisani-didi/:id" element={<KisaniDidiProfile />} />
+              <Route path="/kisani-didi/add" element={<AddKisaniDidi />} />
+              <Route path="/kisani-didi/edit/:id" element={<EditKisaniDidi />} />
               <Route path="/farm-managers" element={<FarmManagerManagement />} />
               <Route path="/tasks" element={<TaskManagement />} />
               <Route path="/attendance" element={<AttendanceManagement />} />
