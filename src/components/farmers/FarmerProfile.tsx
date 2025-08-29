@@ -83,6 +83,10 @@ const FarmerProfile = () => {
     }
   };
 
+  const handleEdit = () => {
+    navigate(`/farmers/edit/${farmer.id}`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -99,7 +103,10 @@ const FarmerProfile = () => {
             <p className="text-gray-600">Complete Information for {farmer.name}</p>
           </div>
         </div>
-        <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+        <button 
+          onClick={handleEdit}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+        >
           <Edit size={18} />
           Edit Profile
         </button>

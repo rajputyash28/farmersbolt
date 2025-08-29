@@ -5,6 +5,8 @@ import Dashboard from './components/dashboard/Dashboard';
 import Layout from './components/layout/Layout';
 import FarmerManagement from './components/farmers/FarmerManagement';
 import FarmerProfile from './components/farmers/FarmerProfile';
+import AddFarmer from './components/farmers/AddFarmer';
+import EditFarmer from './components/farmers/EditFarmer';
 import KisaniDidiManagement from './components/kisani-didi/KisaniDidiManagement';
 import KisaniDidiProfile from './components/kisani-didi/KisaniDidiProfile';
 import TaskManagement from './components/tasks/TaskManagement';
@@ -42,6 +44,8 @@ function App() {
               <Route path="/" element={<Navigate to="/dashboard" />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/farmers" element={<FarmerManagement />} />
+              <Route path="/farmers/add" element={<AddFarmer />} />
+              <Route path="/farmers/edit/:id" element={<EditFarmer />} />
               <Route path="/farmers/:id" element={<FarmerProfile />} />
               <Route path="/kisani-didi" element={<KisaniDidiManagement />} />
               <Route path="/kisani-didi/:id" element={<KisaniDidiProfile />} />

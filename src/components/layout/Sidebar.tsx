@@ -25,13 +25,13 @@ const Sidebar = () => {
     { icon: UserCheck, label: 'Kisani Didi Management', path: '/kisani-didi' },
     { icon: UserCog, label: 'Farm Manager Management', path: '/farm-managers' },
     { icon: ClipboardList, label: 'Task Management', path: '/tasks' },
-    { icon: Clock, label: 'Attendance Management', path: '/attendance' },
-    { icon: Leaf, label: 'Carbon Reports', path: '/carbon-reports' },
-    { icon: Calendar, label: 'Booking Management', path: '/bookings' },
-    { icon: FileText, label: 'Static Content', path: '/static-content' },
-    { icon: Bell, label: 'Notifications', path: '/notifications' },
-    { icon: CreditCard, label: 'Payment Management', path: '/payments' },
-    { icon: Shield, label: 'Sub-Admin Management', path: '/sub-admins' },
+    // { icon: Clock, label: 'Attendance Management', path: '/attendance' },
+    // { icon: Leaf, label: 'Carbon Reports', path: '/carbon-reports' },
+    // { icon: Calendar, label: 'Booking Management', path: '/bookings' },
+    // { icon: FileText, label: 'Static Content', path: '/static-content' },
+    // { icon: Bell, label: 'Notifications', path: '/notifications' },
+    // { icon: CreditCard, label: 'Payment Management', path: '/payments' },
+    // { icon: Shield, label: 'Sub-Admin Management', path: '/sub-admins' },
     { icon: Settings, label: 'Settings', path: '/settings' }
   ];
 
