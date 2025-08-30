@@ -1,6 +1,6 @@
-import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, MapPin, Users, Sprout, Tractor } from 'lucide-react';
+import { ArrowLeft, Edit, MapPin, Users, Sprout, Tractor,Phone ,CreditCard} from 'lucide-react';
+
 
 const FarmerProfile = () => {
   const { id } = useParams();
@@ -181,7 +181,7 @@ const FarmerProfile = () => {
           {/* Farm Machinery */}
           <div className="bg-white rounded-lg p-6 border border-gray-200">
             <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Tractor size={20} />
+              <CreditCard size={20} />
               Farm Machinery Details
             </h4>
             <div className="space-y-3">
@@ -210,7 +210,7 @@ const FarmerProfile = () => {
           {/* Personal Information & KYC Documents */}
           <div className="bg-white rounded-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-              👤 Personal Information & KYC Documents
+              <Phone size={20}/> Personal Information & KYC Documents
             </h3>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -303,7 +303,7 @@ const FarmerProfile = () => {
           {/* Land Details */}
           <div className="bg-white rounded-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              🏞️ Land Details
+              <img src='/house.svg' alt='house'/> Land Details
             </h3>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
@@ -370,7 +370,7 @@ const FarmerProfile = () => {
           {/* Livestock Details */}
           <div className="bg-white rounded-lg p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              🐄 Livestock Details
+              <img src='/wheel.svg' alt='wheel'/> Livestock Details
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>

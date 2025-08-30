@@ -7,15 +7,17 @@ const FarmerManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
+  const [itemsPerPage] = useState(4);
   const [filters, setFilters] = useState({
     state: '',
     district: '',
     mandal: '',
-    landSize: ''
+    landSizeFrom: '',
+    landSizeTo: ''
   });
   const [showActionMenu, setShowActionMenu] = useState(null);
   const actionMenuRef = useRef(null);
+  const actionButtonRefs = useRef({});
 
   // Mock data with additional fields for filtering
   const [allFarmers, setAllFarmers] = useState([
@@ -86,19 +88,35 @@ const FarmerManagement = () => {
     }))
   ]);
 
+  const getLandSizeMin = (sizeStr) => {
+    if (!sizeStr) return 0;
+    if (sizeStr === '10+ acres') return 10;
+    const parts = sizeStr.split('-');
+    return parseFloat(parts[0]) || 0;
+  };
+
+  const getLandSizeMax = (sizeStr) => {
+    if (!sizeStr) return 0;
+    if (sizeStr === '10+ acres') return Number.POSITIVE_INFINITY;
+    const parts = sizeStr.split('-');
+    if (parts.length < 2) return parseFloat(parts[0]) || 0;
+    return parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
+  };
+
   // Apply filters and search
   const filteredFarmers = allFarmers.filter(farmer => {
     const matchesSearch = farmer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       farmer.mobile.includes(searchTerm) ||
       farmer.memberId.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFilters = 
-      (filters.state === '' || farmer.state === filters.state) &&
-      (filters.district === '' || farmer.district === filters.district) &&
-      (filters.mandal === '' || farmer.mandal === filters.mandal) &&
-      (filters.landSize === '' || farmer.landSize === filters.landSize);
+    const matchesState = filters.state === '' || farmer.state === filters.state;
+    const matchesDistrict = filters.district === '' || farmer.district === filters.district;
+    const matchesMandal = filters.mandal === '' || farmer.mandal === filters.mandal;
+    const matchesLandSize = (filters.landSizeFrom === '' && filters.landSizeTo === '') ||
+      (getLandSizeMax(farmer.landSize) >= (parseFloat(filters.landSizeFrom) || 0) &&
+        getLandSizeMin(farmer.landSize) <= (parseFloat(filters.landSizeTo) || Number.POSITIVE_INFINITY));
 
-    return matchesSearch && matchesFilters;
+    return matchesSearch && matchesState && matchesDistrict && matchesMandal && matchesLandSize;
   });
 
   // Pagination logic
@@ -137,7 +155,7 @@ const FarmerManagement = () => {
         farmer.landSize
       ])
     ];
-    
+
     const csvContent = csvData.map(row => row.map(field => `"${field}"`).join(',')).join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -158,7 +176,8 @@ const FarmerManagement = () => {
       state: '',
       district: '',
       mandal: '',
-      landSize: ''
+      landSizeFrom: '',
+      landSizeTo: ''
     });
     setCurrentPage(1);
   };
@@ -176,27 +195,40 @@ const FarmerManagement = () => {
 
   const handleBlockFarmer = (farmer) => {
     // Toggle farmer status
-    setAllFarmers(prev => 
-      prev.map(f => 
-        f.id === farmer.id 
-          ? { ...f, status: f.status === 'Active' ? 'Inactive' : 'Active' } 
+    setAllFarmers(prev =>
+      prev.map(f =>
+        f.id === farmer.id
+          ? { ...f, status: f.status === 'Active' ? 'Inactive' : 'Active' }
           : f
       )
     );
     setShowActionMenu(null);
   };
 
-  const toggleActionMenu = (farmerId) => {
-    setShowActionMenu(showActionMenu === farmerId ? null : farmerId);
+  const toggleActionMenu = (farmerId, e) => {
+    // Prevent event from bubbling to document click handler
+    e.stopPropagation();
+    
+    // If clicking the same button that's already open, close it
+    if (showActionMenu === farmerId) {
+      setShowActionMenu(null);
+    } else {
+      // Otherwise, open the menu for this farmer
+      setShowActionMenu(farmerId);
+    }
   };
 
   // Click outside to close action menu
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
+      // Check if the click is on the three dots button
+      const isActionButton = event.target.closest('button[title="More Actions"]');
+      
+      if (actionMenuRef.current && !actionMenuRef.current.contains(event.target) && !isActionButton) {
         setShowActionMenu(null);
       }
     };
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -206,7 +238,7 @@ const FarmerManagement = () => {
   const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-8 relative">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -240,144 +272,187 @@ const FarmerManagement = () => {
         </div>
         <div className='flex items-center justify-end mt-4 gap-3'>
 
-        <button
-          onClick={handleExportCSV}
-          className="bg-white border font-bold border-black text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
-        >
-          {/* <Download size={20}  className = "rotate-180"/> */}
-          <img src="/export.svg" alt="export" />
-          Export CSV
-        </button>
-        <div className="relative">
-          <button 
-            onClick={() => setShowFilterMenu(!showFilterMenu)}
-            className={`flex items-center gap-2 px-4 py-2  transition-colors ${
-              hasActiveFilters 
-                ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                : 'border-gray-300 '
-              }`}
+          <button
+            onClick={handleExportCSV}
+            className="bg-white border font-bold border-black text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors"
           >
-            <img src="/filter.svg" alt="Filter" />
+            <img src="/export.svg" alt="export" />
+            Export CSV
           </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowFilterMenu(!showFilterMenu)}
+              className={`flex items-center gap-2 px-4 py-2 transition-colors ${hasActiveFilters
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-300 '
+                }`}
+            >
+              <img src="/filter.svg" alt="Filter" />
+            </button>
 
-          {/* Filter Dropdown */}
-          {showFilterMenu && (
-            <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-              <div className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-medium text-gray-900">Filter by</h3>
-                  <button 
-                    onClick={() => setShowFilterMenu(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                    <select
-                      value={filters.state}
-                      onChange={(e) => handleFilterChange('state', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            {/* Filter Dropdown */}
+            {showFilterMenu && (
+              <div className="absolute right-0 top-full mt-2 w-60 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <div className="p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium text-gray-900">Filter by</h3>
+                    <button
+                      onClick={() => setShowFilterMenu(false)}
+                      className="text-gray-400 hover:text-gray-600"
                     >
-                      <option value="">All States</option>
-                      <option value="Punjab">Punjab</option>
-                      <option value="Haryana">Haryana</option>
-                    </select>
+                      <X size={19} className='text-[#000000]'/>
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                    <select
-                      value={filters.district}
-                      onChange={(e) => handleFilterChange('district', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="">All Districts</option>
-                      <option value="Ludhiana">Ludhiana</option>
-                      <option value="Karnal">Karnal</option>
-                      <option value="Amritsar">Amritsar</option>
-                      <option value="Panipat">Panipat</option>
-                    </select>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <select
+                        value={filters.state}
+                        onChange={(e) => handleFilterChange('state', e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md appearance-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">States</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Haryana">Haryana</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400" size={20} />
+                    </div>
+
+                    <div className="relative">
+                      <select
+                        value={filters.district}
+                        onChange={(e) => handleFilterChange('district', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Districts</option>
+                        <option value="Ludhiana">Ludhiana</option>
+                        <option value="Karnal">Karnal</option>
+                        <option value="Amritsar">Amritsar</option>
+                        <option value="Panipat">Panipat</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400" size={20} />
+                    </div>
+
+                    <div className="relative">
+                      <select
+                        value={filters.mandal}
+                        onChange={(e) => handleFilterChange('mandal', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md appearance-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Mandals</option>
+                        <option value="Ludhiana-I">Ludhiana-I</option>
+                        <option value="Karnal-II">Karnal-II</option>
+                        <option value="Amritsar-I">Amritsar-I</option>
+                        <option value="Panipat-I">Panipat-I</option>
+                        <option value="Mandal-1">Mandal-1</option>
+                        <option value="Mandal-2">Mandal-2</option>
+                        <option value="Mandal-3">Mandal-3</option>
+                        <option value="Mandal-4">Mandal-4</option>
+                        <option value="Mandal-5">Mandal-5</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400" size={20} />
+                    </div>
+
+                    <div className='border rounded p-2'>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Land size</label>
+                     <div className="flex items-center gap-6">
+  <div className="flex items-center gap-2">
+    <label className="whitespace-nowrap">From</label>
+    <input
+      type="number"
+      placeholder=""
+      value={filters.landSizeFrom}
+      onChange={(e) => handleFilterChange('landSizeFrom', e.target.value)}
+      className="w-[35px] h-[15px] px-3 py-2 border border-gray-300 rounded-md  focus:border-transparent no-spin"
+    />
+  </div>
+  <div className="flex items-center gap-1">
+    <label className="whitespace-nowrap">To</label>
+    <input
+      type="number"
+      placeholder=""
+      value={filters.landSizeTo}
+      onChange={(e) => handleFilterChange('landSizeTo', e.target.value)}
+      className="w-[35px] h-[15px] px-3 py-2 border border-gray-300 rounded-md  focus:border-transparent no-spin"
+    />
+  </div>
+</div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mandal</label>
-                    <select
-                      value={filters.mandal}
-                      onChange={(e) => handleFilterChange('mandal', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  <div className="flex items-center gap-2 pt-3 ">
+                    <button
+                      onClick={handleResetFilters}
+                      className="flex-1 px-3 py-2 font-bold text-black-600 bg-white-100 border border-gray-300 rounded-md transition-colors"
                     >
-                      <option value="">All Mandals</option>
-                      <option value="Ludhiana-I">Ludhiana-I</option>
-                      <option value="Karnal-II">Karnal-II</option>
-                      <option value="Amritsar-I">Amritsar-I</option>
-                      <option value="Panipat-I">Panipat-I</option>
-                      <option value="Mandal-1">Mandal-1</option>
-                      <option value="Mandal-2">Mandal-2</option>
-                      <option value="Mandal-3">Mandal-3</option>
-                      <option value="Mandal-4">Mandal-4</option>
-                      <option value="Mandal-5">Mandal-5</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Land size</label>
-                    <select
-                      value={filters.landSize}
-                      onChange={(e) => handleFilterChange('landSize', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      Reset
+                    </button>
+                    <button
+                      onClick={handleApplyFilters}
+                      className="flex-1 px-3 py-2 bg-[#D9D9D9] font-bold text-black border border-gray-300 rounded-md  transition-colors"
                     >
-                      <option value="">All Sizes</option>
-                      <option value="1-2 acres">1-2 acres</option>
-                      <option value="2-5 acres">2-5 acres</option>
-                      <option value="5-10 acres">5-10 acres</option>
-                      <option value="10+ acres">10+ acres</option>
-                    </select>
+                      Apply
+                    </button>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-2 pt-3 border-t border-gray-200">
-                  <button
-                    onClick={handleResetFilters}
-                    className="flex-1 px-3 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    onClick={handleApplyFilters}
-                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Apply
-                  </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-600">Active filters:</span>
-          {Object.entries(filters).map(([key, value]) => 
-            value && (
-              <span key={key} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md">
-                {key}: {value}
-                <button 
-                  onClick={() => handleFilterChange(key, '')}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <X size={12} />
-                </button>
-              </span>
-            )
+          {filters.state && (
+            <span key="state" className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md">
+              State: {filters.state}
+              <button
+                onClick={() => handleFilterChange('state', '')}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <X size={12} />
+              </button>
+            </span>
           )}
-          <button 
+          {filters.district && (
+            <span key="district" className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md">
+              District: {filters.district}
+              <button
+                onClick={() => handleFilterChange('district', '')}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+          {filters.mandal && (
+            <span key="mandal" className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md">
+              Mandal: {filters.mandal}
+              <button
+                onClick={() => handleFilterChange('mandal', '')}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+          {(filters.landSizeFrom || filters.landSizeTo) && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md">
+              Land size: {filters.landSizeFrom || ''} - {filters.landSizeTo || ''}
+              <button
+                onClick={() => {
+                  handleFilterChange('landSizeFrom', '');
+                  handleFilterChange('landSizeTo', '');
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <X size={12} />
+              </button>
+            </span>
+          )}
+          <button
             onClick={handleResetFilters}
             className="text-blue-600 hover:text-blue-800 font-medium"
           >
@@ -388,7 +463,7 @@ const FarmerManagement = () => {
 
       {/* Table */}
       <div className="px-6 py-4 bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="overflow-x-auto">
+        <div >
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
@@ -430,11 +505,10 @@ const FarmerManagement = () => {
                     {farmer.memberId}
                   </td>
                   <td className="py-4 pr-8">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                      farmer.status === 'Active'
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${farmer.status === 'Active'
                         ? 'bg-gray-100 text-[#000000]-800'
                         : 'bg-gray-100 text-red[#000000]-800'
-                    }`}>
+                      }`}>
                       {farmer.status}
                     </span>
                   </td>
@@ -443,22 +517,15 @@ const FarmerManagement = () => {
                   </td>
                   <td className="py-4 text-right relative">
                     <button
-                      onClick={() => toggleActionMenu(farmer.id)}
+                      onClick={(e) => toggleActionMenu(farmer.id, e)}
                       className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                       title="More Actions"
                     >
                       <MoreHorizontal size={16} />
                     </button>
                     {showActionMenu === farmer.id && (
-                      <div ref={actionMenuRef} className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                      <div ref={actionMenuRef} className="absolute right-0 top-8 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                         <div className="py-1">
-                          {/* <button
-                            onClick={() => handleViewProfile(farmer)}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-black hover:bg-gray-100 transition-colors"
-                          >
-                            <Eye size={16} />
-                            View Profile
-                          </button> */}
                           <button
                             onClick={() => {
                               handleEditFarmer(farmer);
@@ -501,11 +568,11 @@ const FarmerManagement = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between ">
         <div className="font-semibold text-sm text-[#000000]">
           Showing {startIndex + 1} to {endIndex} of {totalEntries} entries
         </div>
-        
+
         <div className="flex items-center gap-1">
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -514,7 +581,7 @@ const FarmerManagement = () => {
           >
             Previous
           </button>
-          
+
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
             let pageNum;
             if (totalPages <= 5) {
@@ -526,22 +593,21 @@ const FarmerManagement = () => {
             } else {
               pageNum = currentPage - 2 + i;
             }
-            
+
             return (
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`px-3 py-1 text-sm  transition-colors text-[#8A8A8A] ${
-                  pageNum === currentPage
+                className={`px-3 py-1 text-sm  transition-colors text-[#8A8A8A] ${pageNum === currentPage
                     ? 'border rounded  border-[#000000] '
                     : 'hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 {pageNum}
               </button>
             );
           })}
-          
+
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
@@ -554,8 +620,8 @@ const FarmerManagement = () => {
 
       {/* Overlay to close filter menu when clicking outside */}
       {showFilterMenu && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowFilterMenu(false)}
         />
       )}
